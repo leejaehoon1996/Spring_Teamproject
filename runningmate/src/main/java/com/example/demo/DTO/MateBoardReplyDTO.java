@@ -1,0 +1,35 @@
+package com.example.demo.DTO;
+
+import com.example.demo.entity.MateBoardReply;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class MateBoardReplyDTO {
+	private Long idx;
+	private int invisable;
+	private String content;
+	private String username;
+	private int boardidx;
+	private String regdate;
+	
+	public MateBoardReply toEntity() {
+		MateBoardReply mateboardreply = MateBoardReply.builder()
+				.idx(idx)
+				.invisable(invisable)
+				.content(content)
+				.username(username)
+				.boardidx(boardidx)
+				.regdate(regdate)
+				.build();
+		return mateboardreply;
+	}
+	
+	
+}

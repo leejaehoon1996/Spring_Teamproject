@@ -1,0 +1,40 @@
+package com.example.demo.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.example.demo.DTO.InquireDTO;
+import com.example.demo.service.InquireService;
+
+@Controller
+@RequestMapping("/")
+public class InquireController {
+	
+	private InquireService inquireService;
+	
+	public InquireController(InquireService inquireService) {
+		this.inquireService = inquireService;
+	}
+	
+	@GetMapping("/inquire")
+	public String inquire() {
+		return "inquire";
+	}
+	@GetMapping("/oneonone")
+	public String oneonone() {
+		return "oneonone";
+	}
+	@PostMapping("/oneonone")
+	public String oneononeSave(InquireDTO inquireDTO) {
+		inquireService.saveInquire(inquireDTO);
+		
+		return "redirect:/inquire";
+	}
+	
+	@GetMapping("/inquireList")
+	public String inquireList() {
+		return "inquireList";
+	}
+}

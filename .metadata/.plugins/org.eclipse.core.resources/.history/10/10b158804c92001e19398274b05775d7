@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/layout}">
+<div layout:fragment="content">
+ <!-- Start Breadcrumbs -->
+    <div class="breadcrumbs">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 col-md-6 col-12">
+                    <div class="breadcrumbs-content">
+                        <h1 class="page-title">Inquire</h1>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6 col-12">
+                    <ul class="breadcrumb-nav">
+                        <li><a href="index">Home</a></li>
+                        <li>문의 내역</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Breadcrumbs -->
+
+    <!-- Start Dashboard Section -->
+    <section class="dashboard section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-3 col-md-4 col-12">
+                    <!-- Start Dashboard Sidebar -->
+                    <div class="dashboard-sidebar">
+                        <div class="user-image"><!-- 수정완료 -->
+                            <h3 th:text="${#authentication.principal.username}">
+                               <!-- <span><a href="javascript:void(0)">@들어온유저닉네임</a></span> -->
+                            </h3>
+                        </div>
+                        <div class="dashboard-menu">
+                            <ul>
+                           		<li><a href="myself"><i class="lni lni-user"></i> 내 정보</a></li>
+                           		<li><a href="friendRequest"><i class="lni lni-list"></i> 친구 신청 목록</a></li>
+                           		<li><a href="friendlist"><i class="lni lni-users"></i> 친구 목록</a></li>
+                                <li><a href="member_set"><i class="lni lni-pencil-alt"></i> 내 정보 수정</a></li>
+                                <li><a href="pw_set"><i class="lni lni-lock-alt"></i> 비밀번호 수정</a></li>
+                                <li><a href="message"><i class="lni lni-envelope"></i>받은 쪽지함</a></li>
+                                <li><a href="sendMessage"><i class="lni lni-telegram-original"></i>보낸 쪽지함</a></li>
+                                <li><a class="active" href="inquireList"><i class="lni lni-phone"></i> 문의 내역</a></li>
+                                <li><a href="delete_account"><i class="lni lni-cut"></i> 계정 탈퇴</a></li>
+                            </ul>
+                            <div class="button">
+                                <a class="btn" href="/logout">로그아웃</a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Start Dashboard Sidebar -->
+                </div>
+                <div class="col-lg-9 col-md-12 col-12">
+                    <div class="main-content">
+                        <div class="dashboard-block mt-0">
+                            <h3 class="block-title">문의 내역</h3>
+                            <!-- Start Invoice Items Area -->
+                            <div class="invoice-items default-list-style">
+                                <!-- Start List Title -->
+                                
+                                <div class="default-list-title">
+                                    <div class="row align-items-center">
+                                    	<div class="col-lg-1 col-md-4 col-12">
+                                            <p>No.</p>
+                                        </div>
+                                        <div class="col-lg-2 col-md-4 col-12">
+                                            <p>제목</p>
+                                        </div>
+                                        <div class="col-lg-2 col-md-4 col-12">
+                                            <p>내용</p>
+                                        </div>
+                                        
+                                        <div class="col-lg-2 col-md-2 col-12">
+                                            <p>작성일자</p>
+                                        </div>
+                                        <div class="col-lg-2 col-md-2 col-12 align-right">
+                                            <p>삭제</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- End List Title -->
+                                <!-- Start Single List -->
+                                <div th:each="inquire : ${inquire}">
+                                	<div class="single-list">
+	                                    <div class="row align-items-center">
+	                                    	<div class="col-lg-1 col-md-4 col-12">
+	                                            <p>[[${inquire.count}]]</p>
+	                                        </div>
+	                                        <div class="col-lg-2 col-md-4 col-12">
+	                                        	<p>[[${inquire.title}]]</p>
+	                                            
+	                                        </div>
+	                                        <div class="col-lg-2 col-md-4 col-12">
+	                                        	<p>[[${inquire.content}]]</p>
+	                                            
+	                                        </div>
+	                                        <div class="col-lg-2 col-md-2 col-12">
+	                                        	<p>[[${inquire.regdate}]]</p>
+	                                            
+	                                        </div>
+	                                        <div class="col-lg-2 col-md-2 col-12 align-right">
+	                                            <ul class="action-btn">
+	                                                <li><a th:onclick="|javascript:deleteInquire('${inquire.idx}')|"><i class="lni lni-cross-circle"></i></a></li>
+	                                            </ul>
+	                                        </div>
+	                                    </div>
+                                    </div>
+                                    
+                                </div>
+                                
+                                <!-- End Single List -->
+                                
+                               <!-- Pagination -->
+                                <div class="pagination center" >
+                                    <ul class="pagination-list" >
+                                    	<li th:each="page : ${pageList}" th:if="${page != null}">
+         								   <a th:href="@{'inquire?page=' + ${page}}" th:text="${page}"></a>
+        								</li>
+                                    </ul>
+                                </div>
+                                <!--/ End Pagination -->
+                            </div>
+                            <!-- End Invoice Items Area -->
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- End Dashboard Section -->
+	</div>
+	<div layout:fragment="script">
+		<script>
+			function deleteInquire(idx){
+				
+				if(!confirm("정말 삭제하시겠습니까?")){
+					close;
+				} else {
+					location.href="/inquireDelete/"+ idx;
+					alert("문의가 삭제 되었습니다.");
+				}
+			}
+			
+			document.addEventListener("DOMContentLoaded", function() {
+			      const currentPage = window.location.href; // 현재 페이지 URL 가져오기
+
+			      // 페이지 번호를 갖고 있는 요소들 선택
+			      const pageNumbers = document.querySelectorAll('.pagination-list li a');
+
+			      // 현재 페이지 번호를 갖고 있는 요소를 찾아 active 클래스 추가
+			      pageNumbers.forEach(page => {
+			          const pageHref = page.getAttribute('href');
+			          if (currentPage.includes(pageHref)) {
+			              page.parentNode.classList.add('active');
+			          }
+			      });
+			  });
+		</script>
+	</div>
+</html>

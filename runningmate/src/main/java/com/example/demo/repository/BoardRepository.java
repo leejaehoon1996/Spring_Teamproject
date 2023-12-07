@@ -1,0 +1,18 @@
+package com.example.demo.repository;
+
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.example.demo.entity.Board;
+import com.example.demo.entity.BoardReply;
+
+public interface BoardRepository extends JpaRepository<Board, Long>{
+
+	Page<Board> findByInvisable(PageRequest of, int i);
+
+	void deleteByUsername(String useremail);
+
+}

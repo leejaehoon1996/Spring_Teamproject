@@ -1,0 +1,51 @@
+package com.example.demo.service;
+
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.example.demo.DTO.BoardDTO;
+import com.example.demo.entity.Board;
+import com.example.demo.repository.BoardRepository;
+
+@Service
+public class BoardService {
+	private final BoardRepository boardRepository;
+	
+	public BoardService(BoardRepository boardRepository) {
+		this.boardRepository = boardRepository;
+	}
+	
+	@Transactional
+	public List<BoardDTO> getBoardcontent() {
+		List<Board> board = boardRepository.findAll();
+		List<BoardDTO> boardDTO = new ArrayList<>();
+		
+		for(Board boards : board) {
+			BoardDTO boardDto = BoardDTO.builder()
+					.idx(boards.getIdx()).hit(boards.getHit()).invisable(boards.getInvisable())
+					.title(boards.getTitle()).content(boards.getContent())
+					.reg_date(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(boards.getReg_date()))
+					.user_email(boards.getUseremail()).build();
+			boardDTO.add(boardDto);
+		}
+		return boardDTO;
+	}
+
+	public List<BoardDTO> getBoardList() {
+		List<Board> board = boardRepository.findTop5ByInvisiableOrderByIdxDesc(1);
+		List<BoardDTO> boardDTO = new ArrayList<>();
+		for(Board boards : board) {
+			BoardDTO boardDto = BoardDTO.builder()
+					.idx(boards.getIdx()).hit(boards.getHit()).invisable(boards.getInvisable())
+					.title(boards.getTitle()).content(boards.getContent())
+					.reg_date(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(boards.getReg_date())).user_name(boards.getUsername())
+					.user_email(boards.getUseremail()).build();
+			boardDTO.add(boardDto);
+		}
+		return boardDTO;
+	}
+}

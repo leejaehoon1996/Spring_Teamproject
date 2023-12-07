@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/layout}">
+<div layout:fragment="content">
+
+<!-- start content -->
+ <!-- Start Breadcrumbs -->
+    <div class="breadcrumbs">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 col-md-6 col-12">
+                    <div class="breadcrumbs-content">
+                        <h1 class="page-title" style="font-size:30px">회원가입</h1>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6 col-12">
+                    <ul class="breadcrumb-nav">
+                        <li><a href="index.html">Home</a></li>
+                        <li>회원가입</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Breadcrumbs -->
+
+    <!-- start Registration section -->
+    <section class="login registration section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
+                    <div class="form-head">
+                        <h4 class="title">회원가입</h4>
+                        <form class="default-form-style" action="join" method="post">
+                            <div class="socila-login">
+                            </div>
+                            <div class="form-group">
+                                <label>닉네임</label>
+                                <input name="username" type="text" required style="width:420px;">
+                                <button type="button" class="btn btn-primary btn-lg" 
+                                	style="width:100px; height:55px; float: right; font-size:13px;background-color: #5830E0; border: none;">
+                                		<a href="nick_check" style="color:white;">중복 확인</a></button>
+                            </div>
+                            <div class="form-group">
+                                <label>가입할 아이디</label>
+                                <input name="userId" type="text" required style="width:420px;">
+                                <button type="button" class="btn btn-primary btn-lg" 
+                                	style="width:100px; height:55px; float: right; font-size:13px;background-color: #5830E0; border: none;">
+                                	<a href="email_check" style="color:white;">중복 확인</a></button>
+                            </div>
+                            <div class="form-group">
+                                <label>비밀번호</label>
+                                <input name="pw" type="password" required>
+                            </div>
+                            <div class="form-group">
+                                <label>비밀번호 확인</label>
+                                <input name="pwr" type="password" required>
+                            </div>
+                            <div class="form-group">
+                                <label>주소(동까지 입력)</label>
+                                <input name="addr" type="text" required>
+                            </div>
+                            <div class="form-group">
+                                <label>전화번호</label>
+                                <input name="ph" type="text" required>
+                            </div>
+                                            
+                                <div class="row align-items-center">
+                                </div>
+                            <div class="button">
+                                <button type="submit" class="btn">회원가입</button>
+                            </div>
+                            <p class="outer-link">이미 계정이 있습니까? <a href="login2"> 로그인하기</a>
+                            </p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- End Registration section -->
+<!-- end content -->
+<!-- 알림창 -->
+<!--
+<script>
+function join(){
+	if(confirm("회원가입을 하시겠습니까?")){
+		location.herf="/join";
+	}
+	else{close;}
+}
+</script>
+-->
+</div>
+</html>

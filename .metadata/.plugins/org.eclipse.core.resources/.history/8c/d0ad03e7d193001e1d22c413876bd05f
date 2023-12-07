@@ -1,0 +1,134 @@
+package com.example.demo.controller;
+
+import java.util.List;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import com.example.demo.DTO.BoardDTO;
+import com.example.demo.service.BoardService;
+import com.example.demo.service.FriendListService;
+import com.example.demo.DTO.BoardReplyDTO;
+import com.example.demo.DTO.FriendListDTO;
+
+@Controller
+@RequestMapping("/")
+public class BoardController {
+	private BoardService boardService;
+	private FriendListService friendListService;
+	
+	public BoardController(BoardService boardService, FriendListService friendlistService) {
+		this.boardService = boardService;
+		this.friendListService = friendlistService;
+	}
+	
+	//자유게시판 상세보기
+		@GetMapping("/freeContent/{idx}/a/{id}/b/{myid}")
+		public String freeContent(Model model, @PathVariable("idx") Long idx, @PathVariable("id") String id, @PathVariable("myid") String myid) {
+			BoardDTO boardDTO = boardService.getBoardcontent(idx);
+			List<BoardReplyDTO> boardReplyDTO = boardService.getBoardReply(idx);
+			
+			FriendListDTO friendListDTO = friendListService.getFriend(id, myid);
+			model.addAttribute("freeContent", boardDTO);
+			model.addAttribute("boardreply", boardReplyDTO);
+			model.addAttribute("friend", friendListDTO);
+			return "freeContent";
+		}
+		
+		//자유게시판 리스트getmapping
+			@GetMapping("/freeBoard")
+			public String freeBoard(Model model, @RequestParam(value="page", defaultValue = "1") Integer pageNum) {
+				List<BoardDTO> boardDTO = boardService.getBoardlist(pageNum);
+				Integer[] pageList = boardService.getPageList(pageNum);
+				model.addAttribute("freeBoard", boardDTO);
+				model.addAttribute("pageList", pageList);
+				return "freeBoard";
+			}
+			
+		//자유게시판 글쓰기 getmapping
+			@GetMapping("/freewrite")
+			public String freewrite() {
+				return "freewrite";
+			}
+			
+			@PostMapping("/freewrite")
+			public String freewrite(BoardDTO boardDto) {
+				boardService.Boardwrite(boardDto);
+				return "redirect:/freeBoard";
+			}
+			
+			//자유게시판 수정
+			@GetMapping("/freemodify/{idx}")
+			public String freemodify(Model model, @PathVariable("idx") Long idx) {
+				BoardDTO boardDTO = boardService.getBoardcontent(idx);
+				model.addAttribute("freemodify", boardDTO);
+				return "freemodify";
+			}
+			
+			@PostMapping("/freemodify/{idx}")
+			public String freemodify(BoardDTO boardDto, @PathVariable("idx") Long idx) {
+				boardService.Boardwrite(boardDto);
+				return "redirect:/freeContent/"+idx;
+			}
+			
+			//자유게시판 삭제
+			@GetMapping("/freedelete/{idx}")
+			public String freedelete(@PathVariable("idx") Long idx) {
+				boardService.Boardelete(idx);
+				return "redirect:/freeBoard";
+			}
+			
+			//댓글
+			@GetMapping("/freeContent/boardReply")
+			public String boardReply() {
+				return "boardReply";
+			}
+			
+			@PostMapping("/freeContent/boardReply/{no}/a/{id}/b/{myid}")
+			public String boardReply(BoardReplyDTO boardReplyDTO, @PathVariable("no") Long idx, @PathVariable("id") String id, @PathVariable("myid") String myid) {
+				boardService.BoardReply(boardReplyDTO);
+				return "redirect:/freeContent/" + idx + "/a/" + id + "/b/" + myid;
+			}
+			
+			//댓글 삭제
+			@GetMapping("freeContent/{bidx}/replydelete/{idx}/a/{bid}/b/{id}")
+			public String replydelete(@PathVariable("bidx") Long bidx, @PathVariable("idx") Long idx, @PathVariable("bid") String bid, @PathVariable("id") String id) {
+				boardService.replyelete(idx);
+				return "redirect:/freeContent/"+bidx + "/a/" + bid + "/b/" + id;
+			}
+			
+//			//댓글 수정
+//			@GetMapping("freeContent/{bidx}/replymodify/{idx}")
+//			public String replymodify(@PathVariable("bidx") Long bidx, @PathVariable("idx") Long idx, Model model) {
+//				List<BoardReplyDTO> boardreplydto = boardService.getBoardReply(idx);
+//				
+//				model.addAttribute("boardreplyDto", boardreplydto);
+//				return "replymodify";
+//			}
+//			
+//			@PostMapping("freeContent/{bidx}/replymodify/{idx}")
+//			public String replymodify(@PathVariable("bidx") Long bidx, @PathVariable("idx") Long idx) {
+//				boardService.replyelete(idx);
+//				return "redirect:/freeContent/"+bidx;
+//			}
+			
+			@GetMapping("/replyEdit")
+			public String replyEdit() {
+				return "replyEdit";
+			}
+			
+			@PostMapping("/replyEdit/{no}/a/{id}/b/{myid}")
+			public String editReply(BoardReplyDTO boardreplyDTO, @PathVariable("no") Long bidx, @PathVariable("id") String id, @PathVariable("myid") String myid) {
+				
+				boardService.editReply(boardreplyDTO);
+				return "redirect:/freeContent/" + bidx + "/a/" + id + "/b/" + myid;
+			}
+	
+}

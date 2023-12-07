@@ -1,0 +1,183 @@
+package com.example.demo.service;
+
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.example.demo.DTO.BoardDTO;
+import com.example.demo.DTO.BoardDTO2;
+import com.example.demo.DTO.BoardReplyDTO;
+import com.example.demo.entity.Board;
+import com.example.demo.entity.BoardReply;
+import com.example.demo.repository.BoardReplyRepository;
+import com.example.demo.repository.BoardRepository;
+
+@Service
+public class BoardService {
+	private final BoardRepository boardRepository;
+	private final BoardReplyRepository boardreplyRepository;
+	
+	//페이지 변수선언
+	private static final int BLOCK_PAGE_NUM_COUNT = 5; // 블럭에 존재하는 페이지 번호 수
+    private static final int PAGE_POST_COUNT = 5; // 한 페이지에 존재하는 게시글 수
+	
+	public BoardService(BoardRepository boardRepository, BoardReplyRepository boardreplyRepository) {
+		this.boardRepository = boardRepository;
+		this.boardreplyRepository = boardreplyRepository;
+	}
+	
+	//글 전체보기
+	@Transactional
+	public List<BoardDTO> getBoardlist(Integer pageNum) {
+		Page<Board> page = boardRepository.findByInvisable(PageRequest.of(pageNum - 1, PAGE_POST_COUNT, Sort.by(Sort.Direction.DESC, "idx")),1);
+		 List<Board> board = page.getContent();
+		List<BoardDTO> boardDTO = new ArrayList<>();
+		int count = 1;
+		for(Board boards : board) {
+			
+			BoardDTO boardDto = BoardDTO.builder()
+					.idx(boards.getIdx())
+					.hit(boards.getHit())
+					.invisable(boards.getInvisable())
+					.title(boards.getTitle())
+					.content(boards.getContent())
+					.regdate(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(boards.getRegdate()))
+					.username(boards.getUsername())
+					.count(count)
+					.build();
+			
+			count++;
+			boardDTO.add(boardDto);
+			
+		}
+		return boardDTO;
+	}
+	
+	 @Transactional
+	    public Long getBoardCount() {
+//	    	String username = "1";//
+	        return boardRepository.count(); //근데 이거는 변수에 선언해서 조회된 값만 페이징처리된게 했는데...일단 ㅇㅋ 괄호안에 username 나중에 추가해야함
+	    }
+
+	    public Integer[] getPageList(Integer curPageNum) {
+	    	
+	        Integer[] pageList = new Integer[BLOCK_PAGE_NUM_COUNT];
+
+	// 총 게시글 갯수
+	        Double postsTotalCount = Double.valueOf(this.getBoardCount());
+
+	// 총 게시글 기준으로 계산한 마지막 페이지 번호 계산 (올림으로 계산)
+	        Integer totalLastPageNum = (int)(Math.ceil((postsTotalCount/PAGE_POST_COUNT)));
+
+	// 현재 페이지를 기준으로 블럭의 마지막 페이지 번호 계산
+	        Integer blockLastPageNum = (totalLastPageNum > curPageNum + BLOCK_PAGE_NUM_COUNT)
+	                ? curPageNum + BLOCK_PAGE_NUM_COUNT
+	                : totalLastPageNum;
+
+	// 페이지 시작 번호 조정
+	        curPageNum = (curPageNum <= 3) ? 1 : curPageNum - 2;
+
+	// 페이지 번호 할당
+	        for (int val = curPageNum, i = 0; val <= blockLastPageNum; val++, i++) {
+	            pageList[i] = val;
+	        }
+
+	        return pageList;
+	    }
+	
+	//글 상세보기
+	@Transactional
+	public BoardDTO getBoardcontent(Long idx) {
+		Optional<Board> boardWrapper = boardRepository.findById(idx);
+		Board board = boardWrapper.get();
+		int hit = board.getHit();
+		hit++;
+			BoardDTO boardDto = BoardDTO.builder()
+					.idx(board.getIdx())
+					.hit(hit)
+					.invisable(board.getInvisable())
+					.title(board.getTitle())
+					.content(board.getContent())
+					.regdate(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(board.getRegdate()))
+					.username(board.getUsername())
+					.useremail(board.getUseremail())
+					.build();
+		
+		return boardDto;
+	}
+	
+	
+	
+	//글쓰기
+	@Transactional
+	public Long Boardwrite(BoardDTO boardDto) {
+		return boardRepository.save(boardDto.toEntity()).getIdx();
+	}
+
+	//글 지우기
+	@Transactional
+	public Long Boardelete(Long idx) {
+		Optional<Board> boardWrapper = boardRepository.findById(idx);
+		
+		Board board = boardWrapper.get();
+		
+		BoardDTO2 boardDTO2 = BoardDTO2.builder()
+				.idx(board.getIdx())
+				.title(board.getTitle())
+				.content(board.getContent())
+				.username(board.getUsername())
+				.regdate(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(board.getRegdate()))
+				.build();
+		
+		return boardRepository.save(boardDTO2.toEntity()).getIdx();
+	}
+	
+	//댓글
+	public List<BoardReplyDTO> getBoardReply(Long idx) {
+		List<BoardReply> boardReply = boardreplyRepository.findByBoardidx(idx);
+		List<BoardReplyDTO> boardReplyDtoList = new ArrayList<>();
+		
+		for(BoardReply reply : boardReply) {
+			BoardReplyDTO replyDTO = BoardReplyDTO.builder()
+					.idx(reply.getIdx())
+					.boardidx(reply.getBoardidx())
+					.invisable(reply.getInvisable())
+					.content(reply.getContent())
+					.regdate(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(reply.getRegdate()))
+					.username(reply.getUsername())
+					.build();
+			
+			boardReplyDtoList.add(replyDTO);
+		}
+		return boardReplyDtoList;
+	}
+	
+	//댓글쓰기
+	@Transactional
+	public Long BoardReply(BoardReplyDTO boardReplyDTO) {
+		return boardreplyRepository.save(boardReplyDTO.toEntity()).getIdx();
+		
+	}
+	
+	//댓글삭제
+	@Transactional 
+	public void replyelete(Long idx) {
+		boardreplyRepository.deleteById(idx); 
+	 }
+	//댓글 수정
+	public Long editReply(BoardReplyDTO boardreplyDTO) {
+		return boardreplyRepository.save(boardreplyDTO.toEntity()).getIdx();
+		
+	}
+
+	
+
+	
+}

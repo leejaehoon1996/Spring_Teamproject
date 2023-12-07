@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Chat</title>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/sockjs/1.1/sockjs.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<body>
+    <script>
+    	var stompClient = Stomp.over(socket);
+
+        function connect() {
+            var socket = new SockJS('/chat');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function(frame) {
+                console.log('Connected: ' + frame);
+                stompClient.subscribe('/topic/messages', function(response) {
+                    showMessage(JSON.parse(response.body).content);
+                });
+            }, function(error) {
+                console.log('Error during WebSocket connection: ' + error);
+            });
+        }
+
+        function showMessage(message) {
+            $("#chat").append("<p>" + message + "</p>");
+        }
+
+        function sendMessage() {
+            stompClient.send("/app/chat", {}, JSON.stringify({'content': $("#message").val()}));
+            $("#message").val("");
+        }
+
+        $(function() {
+            $("form").on('submit', function(e) {
+                e.preventDefault();
+            });
+            $("#connect").click(function() {
+                connect();
+            });
+            $("#send").click(function() {
+                sendMessage();
+            });
+        });
+    </script>
+
+    <div>
+        <button id="connect">Connect</button>
+        <div>
+            <input type="text" id="message" placeholder="Type a message..."/>
+            <button id="send">Send</button>
+        </div>
+        <div id="chat"></div>
+    </div>
+</body>
+</html>

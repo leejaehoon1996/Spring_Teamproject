@@ -1,0 +1,62 @@
+package com.example.demo.controller;
+
+import java.util.List;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import com.example.demo.DTO.InquireDTO;
+import com.example.demo.service.InquireService;
+
+@Controller
+@RequestMapping("/")
+public class InquireController {
+	
+	private InquireService inquireService;
+	
+	public InquireController(InquireService inquireService) {
+		this.inquireService = inquireService;
+	}
+	
+	@GetMapping("/inquire")
+	public String inquire() {
+		return "inquire";
+	}
+	@GetMapping("/oneonone")
+	public String oneonone() {
+		return "oneonone";
+	}
+	@PostMapping("/oneonone")
+	public String oneononeSave(InquireDTO inquireDTO) {
+		inquireService.saveInquire(inquireDTO);
+		
+		return "redirect:/inquire";
+	}
+	
+	@GetMapping("/inquireList")
+	public String inquireList(Model model,  @RequestParam(value="page", defaultValue = "1") Integer pageNum) {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		String currentUsername = authentication.getName();
+		List<InquireDTO> inquireDto = inquireService.getInquirelist(currentUsername,pageNum);
+		Integer[] pageList = inquireService.getPageList(currentUsername, pageNum);
+		
+		model.addAttribute("inquire", inquireDto);
+		model.addAttribute("pageList", pageList);
+		
+		return "inquireList";
+	}
+	
+	@GetMapping("/inquireDelete/{no}")
+	public String inquireDelete(@PathVariable("no") Long idx) {
+		inquireService.deleteInquire(idx);
+		
+		return "redirect:/inquireList";
+	}
+}

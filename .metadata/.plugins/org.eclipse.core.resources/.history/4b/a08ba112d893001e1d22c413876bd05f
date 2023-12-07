@@ -1,0 +1,163 @@
+package com.example.demo.controller;
+
+import java.util.List;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.example.demo.DTO.FriendListDTO;
+import com.example.demo.DTO.MateBoardDTO;
+import com.example.demo.DTO.MateBoardReplyDTO;
+import com.example.demo.DTO.MemberDTO;
+import com.example.demo.service.FriendListService;
+import com.example.demo.service.MateBoardService;
+import com.example.demo.service.MemberService;
+
+
+@Controller
+@RequestMapping("/")
+public class MateBoardController {
+private MateBoardService mateboardService;
+private MemberService memberService;
+private FriendListService friendListService;
+	
+	
+	public MateBoardController(MateBoardService mateboardService, MemberService memberService, FriendListService friendListService) {
+		this.memberService = memberService;
+		this.mateboardService = mateboardService;
+		this.friendListService = friendListService;
+	}
+	
+	//메이트게시판 리스트getmapping
+			@GetMapping("/mateBoard")
+			public String mateBoard(Model model, @RequestParam(value="page", defaultValue = "1") Integer pageNum) {
+				List<MateBoardDTO> mateboardDTO = mateboardService.getBoardlist(pageNum);
+				Integer[] pageList = mateboardService.getPageList(pageNum);
+				model.addAttribute("mateBoard", mateboardDTO);
+				model.addAttribute("pageList", pageList);
+				return "mateBoard";
+			}
+			
+			@GetMapping("/mateBoard2/{local}")
+			public String mateBoardSeoul(Model model, @RequestParam(value="page", defaultValue = "1") Integer pageNum, @PathVariable("local") String local) {
+				List<MateBoardDTO> mateboardDTO = mateboardService.getSeuolBoardlist(pageNum,local);
+				Integer[] pageList = mateboardService.getLocalPageList(pageNum, local);
+				
+				model.addAttribute("mateBoard", mateboardDTO);
+				model.addAttribute("pageList", pageList);
+				return "mateBoard2";
+			}
+			
+	//메이트게시판 글쓰기 getmapping
+			@GetMapping("/matewrite/{username}")
+			public String matewrite(Model model, @PathVariable("username") String username ) {
+				MemberDTO memberDto = memberService.getMemberinfo(username);
+				
+				model.addAttribute("member", memberDto);
+				
+				return "matewrite";
+			}
+			
+			@PostMapping("/matewrite")
+			public String matewrite(MateBoardDTO mateboardDto) {
+				mateboardService.mateBoardwrite(mateboardDto);
+				return "redirect:/mateBoard";
+			}
+			
+	//메이트게시판 상세보기
+			@GetMapping("/mateContent/{idx}/a/{id}/b/{myid}")
+			public String mateContent(Model model, @PathVariable("idx") Long idx, @PathVariable("id") String id, @PathVariable("myid") String myid) {
+				MateBoardDTO mateboardDTO = mateboardService.getMateBoardcontent(idx);
+				List<MateBoardReplyDTO> mateboardReplyDTO = mateboardService.getMateBoardReply(idx);
+				
+				FriendListDTO friendListDTO = friendListService.getFriend(id, myid);
+				
+				model.addAttribute("mateContent", mateboardDTO);
+				model.addAttribute("mateboardreply", mateboardReplyDTO);
+				model.addAttribute("friend", friendListDTO);
+				
+				return "mateContent";
+			}
+			
+			//메이트게시판 수정
+			@GetMapping("/matemodify/{idx}")
+			public String matemodify(Model model, @PathVariable("idx") Long idx) {
+				MateBoardDTO mateboardDTO = mateboardService.getMateBoardcontent(idx);
+				model.addAttribute("matemodify", mateboardDTO);
+				return "matemodify";
+			}
+			
+			@PostMapping("/matemodify/{idx}")
+			public String matefreemodify(MateBoardDTO mateboardDto, @PathVariable("idx") Long idx) {
+				mateboardService.mateBoardwrite(mateboardDto);
+				return "redirect:/mateContent/"+idx;
+			}
+			
+			//메이트게시판 삭제
+			@GetMapping("/matedelete/{idx}")
+			public String matedelete(@PathVariable("idx") Long idx) {
+				mateboardService.mateBoardelete(idx);
+				return "redirect:/mateBoard";
+			}
+			
+			//댓글
+			@GetMapping("/mateContent/mateboardReply")
+			public String mateboardReply() {
+				return "mateboardReply";
+			}
+			
+			@PostMapping("/mateContent/mateboardReply/{no}/a/{id}/b/{myid}")
+			public String mateboardReply(MateBoardReplyDTO mateboardReplyDTO, @PathVariable("no") Long idx, @PathVariable("id") String id, @PathVariable("myid") String myid) {
+				mateboardService.MateBoardReply(mateboardReplyDTO);
+				return "redirect:/mateContent/" + idx + "/a/" + id + "/b/" + myid;
+			}
+			
+			
+			//댓글 삭제
+			@GetMapping("matereplydelete")
+			public String replydelete() {
+				
+				return "replydelete";
+			}
+			
+			@PostMapping("/mateContent/{boardReplyIdx}/matereplydelete/{freeContentIdx}")
+		    @ResponseBody
+		    public String deleteReply(@PathVariable("boardReplyIdx") Long boardReplyIdx, 
+		                              @PathVariable("freeContentIdx") Long freeContentIdx) {
+		        // 여기서 디비에서 댓글을 삭제하는 로직을 수행하고, 성공 여부를 반환하거나 예외 처리 등을 수행합니다.
+		        try {
+		            // boardReplyIdx와 freeContentIdx를 이용하여 해당 댓글을 삭제하는 로직을 구현합니다.
+		            // 필요한 파라미터들을 이용하여 삭제 작업을 수행합니다.
+		            // 삭제에 성공했을 경우 성공 여부를 반환하거나, 성공 상태 코드를 반환합니다.
+		        	mateboardService.replyelete(boardReplyIdx);
+		            return "success"; // 성공했을 때 반환할 메시지나 상태 코드
+		        } catch (Exception e) {
+		            e.printStackTrace();
+		            return "error"; // 실패했을 때 반환할 메시지나 상태 코드
+		        }
+		    }
+			
+			//댓글 수정
+			@GetMapping("/matereplyEdit")
+			public String matereplyEdit() {
+				return "matereplyEdit";
+			}
+			
+			@PostMapping("/matereplyEdit/{no}/a/{id}/b/{myid}")
+			public String mateReplyedit(MateBoardReplyDTO mateboardreplyDTO, @PathVariable("no") Long bidx, @PathVariable("id") String id, @PathVariable("myid") String myid) {
+				
+				mateboardService.mateReplyedit(mateboardreplyDTO);
+				return "redirect:/mateContent/" + bidx + "/a/" + id + "/b/" + myid;
+			}
+			
+			
+}

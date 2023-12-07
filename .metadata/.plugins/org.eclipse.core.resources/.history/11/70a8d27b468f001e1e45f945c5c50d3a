@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/layout}">
+<div layout:fragment="content">
+
+    <!-- Start Breadcrumbs -->
+    <div class="breadcrumbs">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 col-md-6 col-12">
+                    <div class="breadcrumbs-content">
+                        <h1 class="page-title">계정 탈퇴</h1>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6 col-12">
+                    <ul class="breadcrumb-nav">
+                        <li><a href="index.html">home</a></li>
+                        <li>계정 탈퇴</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Breadcrumbs -->
+
+    <!-- Start Dashboard Section -->
+   <section class="dashboard section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-3 col-md-4 col-12">
+                    <!-- Start Dashboard Sidebar -->
+                    <div class="dashboard-sidebar">
+                        <div class="user-image"><!-- 수정완료 -->
+                            <h3>로그인한 사람
+                               <!-- <span><a href="javascript:void(0)">@들어온유저닉네임</a></span> -->
+                            </h3>
+                        </div>
+                        <div class="dashboard-menu">
+                            <ul>
+                           		<li><a href="javascript:void(0)"><i class="lni lni-user"></i> 내 정보</a></li>
+                           		<li><a href="javascript:void(0)"><i class="lni lni-list"></i> 친구 신청 목록</a></li>
+                           		<li><a href="javascript:void(0)"><i class="lni lni-users"></i> 친구 목록</a></li>
+                                <li><a href="member_set"><i class="lni lni-pencil-alt"></i> 내 정보 수정</a></li>
+                                <li><a href="pw_set"><i class="lni lni-lock-alt"></i> 비밀번호 수정</a></li>
+                                <li><a href="javascript:void(0)"><i class="lni lni-envelope"></i> 메세지</a></li>
+                                <li><a class="active" href="javascript:void(0)"><i class="lni lni-cut"></i> 계정 탈퇴</a></li>
+                            </ul>
+                            <div class="button">
+                                <a class="btn" href="javascript:void(0)">로그아웃</a>
+                            </div>
+                        </div>
+                     </div>
+                 </div>
+                <div class="col-lg-9 col-md-8 col-12">
+                    <div class="main-content">
+                        <div class="dashboard-block close-content mt-0">
+                            <h2>계정 탈퇴</h2>
+                            <h4>계정을 탈퇴하면 되돌릴 수 없습니다. 신중하게 진행해주세요.</h4>
+                           
+                            <div class="button">
+                                <a th:onclick="|javascript:updateTask('{$userId}')|" class="btn">계정 탈퇴</a>
+                                <a href="javascript:void(0)" class="btn btn-alt">취소</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- End Dashboard Section -->
+
+ </div>
+ <div layout:fragment="script"> <!-- 일단 경고창은 뒤로 미루자 -->
+  <script>
+  function deleteAccount(userId){
+      if (confirm("계정을 삭제하시겠습니까?") == true){    //확인
+    	  location.href="http://localhost:8080/member_set/delete/" +userId;
+      }else{   //취소
+          return;
+     }
+  }
+  
+   </script>
+</div>
+</html>

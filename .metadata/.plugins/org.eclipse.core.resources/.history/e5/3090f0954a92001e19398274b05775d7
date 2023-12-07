@@ -1,0 +1,61 @@
+package com.example.demo.service;
+
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.example.demo.DTO.InquireDTO;
+import com.example.demo.entity.Inquire;
+import com.example.demo.repository.InquireRepository;
+
+@Service
+public class InquireService {
+	
+	private final InquireRepository inquireRepository;
+	
+	public InquireService(InquireRepository inquireRepository) {
+		this.inquireRepository = inquireRepository;
+	}
+	
+	@Transactional
+	public Long saveInquire(InquireDTO inquireDTO) {
+		return inquireRepository.save(inquireDTO.toEntity()).getIdx();
+	}
+	
+	private static final int BLOCK_PAGE_NUM_COUNT = 5; //블럭에 존재하는 페이지 번호 수
+	private static final int PAGE_POST_COUNT = 5; //한 페이지에 존재하는 게시글 수
+	
+	@Transactional
+	public List<InquireDTO> getInquirelist(String currentUsername, Integer pageNum) {
+		Page<Inquire> page = inquireRepository.findByUseremailOrderByIdxDesc(PageRequest.of(pageNum -1, PAGE_POST_COUNT), currentUsername);
+		
+		List<Inquire> inquire = page.getContent(); 
+		List<InquireDTO> inquireDtoList = new ArrayList<>();
+		int count = 1;
+		for(Inquire inquirelist : inquire) {
+			
+			InquireDTO inquireDto = InquireDTO.builder()
+					.idx(inquirelist.getIdx())
+					.content(inquirelist.getContent())
+					.title(inquirelist.getTitle())
+					.useremail(inquirelist.getUseremail())
+					.regdate(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(inquirelist.getReg_date()))
+					.build();
+
+			inquireDtoList.add(inquireDto);
+			
+			count++;
+		}
+		return null;
+	}
+
+	public Integer[] getPageList(String currentUsername, Integer pageNum) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+}

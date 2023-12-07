@@ -1,0 +1,20 @@
+package com.example.demo.DTO;
+
+import java.time.LocalDateTime;
+
+import lombok.*;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class BoardDTO {
+	private Long idx;
+	private int hit;
+	private int invisable;
+	private String content;
+	private String title;
+	private String user_name;
+	private String user_email;
+	private String reg_date;
+}

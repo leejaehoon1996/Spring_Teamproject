@@ -1,0 +1,185 @@
+package com.example.demo.service;
+
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.example.demo.DTO.BoardReplyDTO;
+import com.example.demo.DTO.MateBoardDTO;
+import com.example.demo.DTO.MateBoardDTO2;
+import com.example.demo.DTO.MateBoardReplyDTO;
+import com.example.demo.entity.MateBoard;
+import com.example.demo.entity.MateBoardReply;
+import com.example.demo.repository.MateBoardReplyRepository;
+import com.example.demo.repository.MateBoardRepository;
+
+
+@Service
+public class MateBoardService {
+	private final MateBoardRepository mateboardRepository;
+	private final MateBoardReplyRepository mateboardreplyRepository;
+	
+	//페이지 변수선언
+	private static final int BLOCK_PAGE_NUM_COUNT = 5; // 블럭에 존재하는 페이지 번호 수
+    private static final int PAGE_POST_COUNT = 5; // 한 페이지에 존재하는 게시글 수
+    
+	public MateBoardService(MateBoardRepository mateboardRepository, MateBoardReplyRepository mateboardreplyRepository) {
+		this.mateboardRepository = mateboardRepository;
+		this.mateboardreplyRepository = mateboardreplyRepository;
+	}
+	
+	//글 전체보기
+		@Transactional
+		public List<MateBoardDTO> getBoardlist(Integer pageNum) {
+			Page<MateBoard> page = mateboardRepository.findByInvisable(PageRequest.of(pageNum - 1, PAGE_POST_COUNT, Sort.by(Sort.Direction.DESC, "idx")),1);
+			 List<MateBoard> mateboard = page.getContent();
+			List<MateBoardDTO> mateboardDTO = new ArrayList<>();
+			int count = 1;
+			for(MateBoard mateboards : mateboard) {
+				
+				MateBoardDTO mateboardDto = MateBoardDTO.builder()
+						.idx(mateboards.getIdx())
+						.hit(mateboards.getHit())
+						.invisable(mateboards.getInvisable())
+						.local(mateboards.getLocal())
+						.title(mateboards.getTitle())
+						.content(mateboards.getContent())
+						.regdate(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(mateboards.getReg_date()))
+						.username(mateboards.getUsername())
+						.useremail(mateboards.getUseremail())
+						.count(count)
+						.build();
+				
+				count++;
+				mateboardDTO.add(mateboardDto);
+				
+			}
+			return mateboardDTO;
+		}
+		
+		//글쓰기
+				@Transactional
+				public Long mateBoardwrite(MateBoardDTO mateboardDto) {
+					return mateboardRepository.save(mateboardDto.toEntity()).getIdx();
+				}
+
+		//글 상세보기
+				@Transactional
+				public MateBoardDTO getMateBoardcontent(Long idx) {
+					Optional<MateBoard> mateboardWrapper = mateboardRepository.findById(idx);
+					MateBoard mateboard = mateboardWrapper.get();
+					int hit = mateboard.getHit();
+					hit++;
+						MateBoardDTO mateboardDto = MateBoardDTO.builder()
+								.idx(mateboard.getIdx())
+								.hit(hit)
+								.invisable(mateboard.getInvisable())
+								.local(mateboard.getLocal())
+								.title(mateboard.getTitle())
+								.content(mateboard.getContent())
+								.regdate(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(mateboard.getReg_date()))
+								.username(mateboard.getUsername())
+								.useremail(mateboard.getUseremail())
+								.build();
+						mateboardRepository.save(mateboardDto.toEntity());
+					return mateboardDto;
+				}
+				
+				
+		//글 지우기
+				@Transactional
+				public Long mateBoardelete(Long idx) {
+					Optional<MateBoard> mateboardWrapper = mateboardRepository.findById(idx);
+					
+					MateBoard mateboard = mateboardWrapper.get();
+					
+					MateBoardDTO2 mateboardDTO2 = MateBoardDTO2.builder()
+							.idx(mateboard.getIdx())
+							.title(mateboard.getTitle())
+							.content(mateboard.getContent())
+							.username(mateboard.getUsername())
+							.regdate(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(mateboard.getReg_date()))
+							.build();
+					
+					return mateboardRepository.save(mateboardDTO2.toEntity()).getIdx();
+				}
+		
+		@Transactional
+	    public Long getBoardCount() {
+//	    	String username = "1";//
+	        return mateboardRepository.count(); //근데 이거는 변수에 선언해서 조회된 값만 페이징처리된게 했는데...일단 ㅇㅋ 괄호안에 username 나중에 추가해야함
+	    }
+
+	    public Integer[] getPageList(Integer curPageNum) {
+	    	
+	        Integer[] pageList = new Integer[BLOCK_PAGE_NUM_COUNT];
+
+	// 총 게시글 갯수
+	        Double postsTotalCount = Double.valueOf(this.getBoardCount());
+
+	// 총 게시글 기준으로 계산한 마지막 페이지 번호 계산 (올림으로 계산)
+	        Integer totalLastPageNum = (int)(Math.ceil((postsTotalCount/PAGE_POST_COUNT)));
+
+	// 현재 페이지를 기준으로 블럭의 마지막 페이지 번호 계산
+	        Integer blockLastPageNum = (totalLastPageNum > curPageNum + BLOCK_PAGE_NUM_COUNT)
+	                ? curPageNum + BLOCK_PAGE_NUM_COUNT
+	                : totalLastPageNum;
+
+	// 페이지 시작 번호 조정
+	        curPageNum = (curPageNum <= 3) ? 1 : curPageNum - 2;
+
+	// 페이지 번호 할당
+	        for (int val = curPageNum, i = 0; val <= blockLastPageNum; val++, i++) {
+	            pageList[i] = val;
+	        }
+
+	        return pageList;
+	    }
+	    
+	  //댓글
+		public List<MateBoardReplyDTO> getMateBoardReply(Long idx) {
+			List<MateBoardReply> mateboardReply = mateboardreplyRepository.findByBoardidx(idx);
+			List<MateBoardReplyDTO> mateboardReplyDtoList = new ArrayList<>();
+			
+			for(MateBoardReply matereply : mateboardReply) {
+				MateBoardReplyDTO matereplyDTO = MateBoardReplyDTO.builder()
+						.idx(matereply.getIdx())
+						.boardidx(matereply.getBoardidx())
+						.invisable(matereply.getInvisable())
+						.content(matereply.getContent())
+						.regdate(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(matereply.getReg_date()))
+						.username(matereply.getUsername())
+						.build();
+				
+				mateboardReplyDtoList.add(matereplyDTO);
+			}
+			return mateboardReplyDtoList;
+		}
+		
+		//댓글쓰기
+		@Transactional
+		public Long MateBoardReply(MateBoardReplyDTO mateboardReplyDTO) {
+			return mateboardreplyRepository.save(mateboardReplyDTO.toEntity()).getIdx();
+			
+		}
+		
+		//댓글삭제
+		@Transactional 
+		public void replyelete(Long idx) {
+			mateboardreplyRepository.deleteById(idx); 
+		 }
+		
+		//댓글 수정
+		public Long mateReplyedit(MateBoardReplyDTO mateboardreplyDTO) {
+			return mateboardreplyRepository.save(mateboardreplyDTO.toEntity()).getIdx();
+			
+		}
+	  
+}

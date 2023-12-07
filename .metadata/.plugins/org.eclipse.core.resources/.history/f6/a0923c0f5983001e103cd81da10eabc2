@@ -1,0 +1,12 @@
+package com.example.demo.dto;
+
+
+public class ChatMessage {
+
+    private String content;
+    private String sender;
+
+    // Getters and setters
+
+    // Constructors
+}

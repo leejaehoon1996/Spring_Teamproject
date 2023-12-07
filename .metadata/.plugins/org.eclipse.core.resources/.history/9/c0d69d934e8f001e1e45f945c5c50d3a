@@ -1,0 +1,16 @@
+package com.example.demo.DTO;
+
+import lombok.Getter;
+import lombok.Setter;
+
+//회원가입화면에서 넘어논 가입정보를 담는 객체
+@Getter
+@Setter
+public class MemberDTO {
+	
+	private String username;
+	private String userId;
+	private String pw;
+	private String addr;
+	private String ph;
+}

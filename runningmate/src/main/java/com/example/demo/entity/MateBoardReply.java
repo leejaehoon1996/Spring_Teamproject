@@ -1,0 +1,49 @@
+package com.example.demo.entity;
+
+import java.security.Timestamp;
+import java.time.LocalDateTime;
+
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Entity
+public class MateBoardReply {
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long idx;
+	
+	@Column(nullable = false, length = 100)
+	private String content;
+	
+	private int boardidx;
+	
+	@GeneratedValue
+	private String username;
+	
+	@GeneratedValue
+	private String useremail;
+	
+	@ColumnDefault("1")
+	private int invisable;
+	
+	
+	private LocalDateTime reg_date;
+	
+	@Builder
+	public MateBoardReply(Long idx, int invisable, String content, String username, int boardidx, String regdate, String useremail) {
+		this.idx = idx;
+		this.invisable=1;
+		this.content=content;
+		this.username = username;
+		this.useremail = useremail;
+		this.boardidx = boardidx;
+		this.reg_date=LocalDateTime.now();
+	}
+}

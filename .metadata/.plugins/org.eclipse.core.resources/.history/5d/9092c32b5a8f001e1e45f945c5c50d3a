@@ -1,0 +1,53 @@
+package com.example.demo.service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.example.demo.DTO.MemberDTO;
+import com.example.demo.entity.Member;
+import com.example.demo.repository.MemberRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@Transactional
+@RequiredArgsConstructor
+public class MemberService {
+	private final MemberRepository memberRepository;
+
+    public Member saveMember(Member member){
+        validateDubplicateMember(member);
+        return memberRepository.save(member);
+
+    }
+
+    private void validateDubplicateMember(Member member) {
+        Member findMember = memberRepository.findByUserId(member.getUserId());
+        if(findMember != null){
+            throw new IllegalStateException("이미 가입된 회원입니다.");
+        }
+
+    }
+
+	public MemberDTO getUsername(String currentUsername) {
+		Optional<Member> memberWrapper = memberRepository.findByUsername(currentUsername);
+		Member member = memberWrapper.get();
+		
+		MemberDTO memberDto = MemberDTO.builder().idx(member.getIdx())
+				.username(member.getUsername())
+				.userId(member.getUserId()).build();
+		
+		
+		return memberDto;
+	}
+	
+	public void deleteMember(Long idx) {
+		memberRepository.deleteById(idx);
+		
+	}
+    
+}

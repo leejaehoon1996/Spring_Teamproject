@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/layout}">
+<div layout:fragment="content">
+
+<!-- start content -->
+ <!-- Start Breadcrumbs -->
+    <div class="breadcrumbs">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 col-md-6 col-12">
+                    <div class="breadcrumbs-content">
+                        <h1 class="page-title" style="font-size:30px">회원가입</h1>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6 col-12">
+                    <ul class="breadcrumb-nav">
+                        <li><a href="/index">Home</a></li>
+                        <li>회원가입</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Breadcrumbs -->
+
+    <!-- start Registration section -->
+    <section class="login registration section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
+                    <div class="form-head">
+                        <h4 class="title">회원가입</h4>
+                        <form id="joinform" class="default-form-style" action="join" method="post" >
+                            <div class="socila-login">
+                            </div>
+                            <div class="form-group">
+                                <label>닉네임</label>
+                                <input name="username" id="username" type="text" required style="width:420px;">
+                                <button type="button" class="btn btn-primary btn-lg"
+                                	style="width:100px; height:55px; float: right; font-size:13px;background-color: #5830E0; border: none;" th:onclick="checkUsername()">중복 확인</button>
+                            </div>
+                            <div class="form-group">
+                                <label>가입할 아이디</label>
+                                <input name="userId" id="userId" type="text" required style="width:420px;">
+                                <button type="button" class="btn btn-primary btn-lg" 
+                                	style="width:100px; height:55px; float: right; font-size:13px;background-color: #5830E0; border: none;" th:onclick="checkUserId()">중복 확인</button>
+                            </div>
+                            <div class="form-group">
+                                <label>비밀번호</label>
+                                <input name="pw" type="password" required>
+                            </div>
+                            <div class="form-group">
+                                <label>비밀번호 확인</label>
+                                <input name="pwr" type="password" required>
+                            </div>
+                            <div class="form-group">
+                                <label>주소(동까지 입력)</label>
+                                <input name="addr" type="text" required>
+                            </div>
+                            <div class="form-group">
+                                <label>전화번호</label>
+                                <input name="ph" type="text" required>
+                            </div>
+                                            
+                                <div class="row align-items-center">
+                                </div>
+                            <div class="button">
+                                <button type="submit" class="btn" th:onclick="validateAndSubmit()" id="joinbtn">회원가입</button>
+                            </div>
+                            <p class="outer-link">이미 계정이 있습니까? <a href="login2"> 로그인하기</a>
+                            </p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- End Registration section -->
+<!-- end content -->
+
+<!-- 알림창 -->
+        <script th:inline="javascript">
+        var unCheck = false;
+        var uiCheck = false;
+     // 닉네임 중복처리
+        function checkUsername() {
+            var username = document.getElementById('username').value;
+            fetch('/check-username?username=' + encodeURIComponent(username))
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    }
+                })
+                .then(data => {
+                    if (!username) {
+                        alert('닉네임을 입력하세요.');
+                    } else if (data.available) {
+                        alert('사용 가능한 닉네임입니다.');
+                        unCheck = true;
+                    } else {
+                        alert('이미 사용 중인 닉네임입니다. 다른 닉네임를 입력하세요.');
+                    }
+                });
+        }
+
+        // 아이디 중복처리
+        function checkUserId() {
+            var userId = document.getElementById('userId').value;
+            fetch('/check-userId?userId=' + encodeURIComponent(userId))
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    }
+                })
+                .then(data => {
+                    if (!userId) {
+                        alert('아이디를 입력하세요.');
+                    } else if (data.available) {
+                        alert('사용 가능한 아이디입니다.');
+                        uiCheck = true;
+                    } else {
+                        alert('이미 사용 중인 아이디입니다. 다른 아이디를 입력하세요.');
+                    }
+                });
+        }
+
+        // 회원가입 처리부분
+        function validateAndSubmit() {
+        	if(unCheck == true && uiCheck == true){
+                // Submit the registration form
+                alert('회원가입 성공');
+                document.getElementById('joinform').submit();
+        	} else {
+        		alert('중복된 닉네임 혹은 아이디가 있습니다.');
+        		history.back();
+        	}
+            
+        }
+        </script>
+
+</div>
+</html>

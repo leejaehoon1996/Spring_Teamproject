@@ -1,0 +1,159 @@
+package com.example.demo.service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.example.demo.DTO.MemberDTO;
+import com.example.demo.DTO.PasswordDTO;
+import com.example.demo.entity.Member;
+import com.example.demo.repository.BoardRepository;
+import com.example.demo.repository.FriendListRepository;
+import com.example.demo.repository.MemberRepository;
+import com.example.demo.repository.MessageRepository;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+@Service
+@Transactional
+@RequiredArgsConstructor
+public class MemberService {
+	private final MemberRepository memberRepository;
+	private final FriendListRepository friendListRepository;
+	private final BoardRepository boardRepository;
+	private final MessageRepository messageRepository;
+	private final BCryptPasswordEncoder bCryptPasswordEncoder;
+
+    public Member saveMember(Member member){
+        validateDubplicateMember(member);
+        return memberRepository.save(member);
+
+    }
+    
+    public Member findMemberByUserId(String userId) {
+        return memberRepository.findByUserId(userId);
+    }
+
+    private void validateDubplicateMember(Member member) {
+        Member findMember = memberRepository.findByUserId(member.getUserId());
+        if(findMember != null){
+            throw new IllegalStateException("이미 가입된 회원입니다.");
+        }
+
+    }
+
+	public MemberDTO getUsername(String currentUsername) {
+		Optional<Member> memberWrapper = memberRepository.findByUsername(currentUsername);
+		Member member = memberWrapper.get();
+		
+		MemberDTO memberDto = MemberDTO.builder().idx(member.getIdx())
+				.username(member.getUsername())
+				.userId(member.getUserId()).build();
+		
+		
+		return memberDto;
+	}
+	
+	public void deleteMember(Long idx) {
+		Optional<Member> memberWrapper = memberRepository.findById(idx);
+		Member member = memberWrapper.get();
+		
+		String useremail = member.getUserId();
+		
+		friendListRepository.deleteByFriendemail(useremail);
+		friendListRepository.deleteByMyemail(useremail);
+		boardRepository.deleteByUsername(useremail);
+		messageRepository.deleteByReceiveemail(useremail);
+		messageRepository.deleteBySendemail(useremail);
+		memberRepository.deleteById(idx);
+		
+	}
+	
+	public Member editMember(Member member) {
+    	return memberRepository.save(member);
+    }
+    
+    @Transactional
+    public MemberDTO findInfo(String currentUsername) {
+        Optional<Member> memberWrapper = memberRepository.findByUsername(currentUsername);
+        
+        if (memberWrapper.isPresent()) {
+            Member member = memberWrapper.get();
+            
+            MemberDTO memberDto = MemberDTO.builder()
+                    .username(member.getUsername())
+                    .addr(member.getAddr())
+                    .ph(member.getPh())
+                    .userId(member.getUserId())
+                    .build();
+            return memberDto;
+        } else {
+            // 값이 없는 경우에 대한 처리
+            // 예외를 던지거나 기본값을 반환하거나 필요에 따라 처리할 수 있습니다.
+            return null; // 일단은 null을 반환하도록 설정합니다.
+        }
+    }
+    
+    @Transactional
+    public MemberDTO updateMemberInfo(MemberDTO updatedMemberDTO) {
+        Optional<Member> memberWrapper = memberRepository.findByUsername(updatedMemberDTO.getUsername());
+        if (memberWrapper.isPresent()) {
+            Member member = memberWrapper.get();
+            
+            // 변경된 정보를 사용하여 회원 정보를 업데이트합니다.
+            member.setAddr(updatedMemberDTO.getAddr());
+            member.setPh(updatedMemberDTO.getPh());
+            // 업데이트할 다른 필드들을 설정합니다.
+            
+            // 업데이트된 회원 엔티티를 저장합니다.
+            Member updatedMember = memberRepository.save(member);
+            
+            // 업데이트된 회원 엔티티를 MemberDTO로 매핑하여 반환합니다.
+            return MemberDTO.builder()
+                    .username(updatedMember.getUsername())
+                    .addr(updatedMember.getAddr())
+                    .ph(updatedMember.getPh())
+                    .userId(updatedMember.getUserId())
+                    // 필요한 경우 다른 필드들을 매핑합니다.
+                    .build();
+        } else {
+            // 회원을 찾지 못한 경우 처리합니다.
+            return null; // 또는 예외를 처리하거나 기본값을 반환합니다.
+        }
+    }
+    
+    public void updatePassword(PasswordDTO passwordDTO) {
+        // 로그인한 사용자 정보 가져오기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = authentication.getName();
+
+        // 사용자 정보 가져오기
+        Optional<Member> memberWrapper = memberRepository.findByUsername(currentUsername);
+        if (memberWrapper.isPresent()) {
+            Member member = memberWrapper.get();
+            
+            // 현재 비밀번호 확인
+            if (!bCryptPasswordEncoder.matches(passwordDTO.getCurrentPassword(), member.getPw())) {
+                throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
+            }
+
+            // 새로운 비밀번호 확인
+            if (!passwordDTO.getNewPassword().equals(passwordDTO.getConfirmPassword())) {
+                throw new IllegalArgumentException("새로운 비밀번호와 확인용 비밀번호가 일치하지 않습니다.");
+            }
+
+            // 새로운 비밀번호 설정
+            member.setPw(bCryptPasswordEncoder.encode(passwordDTO.getNewPassword()));
+            memberRepository.save(member);
+        } else {
+            throw new IllegalStateException("사용자를 찾을 수 없습니다.");
+        }
+    }
+    
+}

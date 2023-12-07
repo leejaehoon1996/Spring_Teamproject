@@ -1,0 +1,22 @@
+package com.example.demo.service;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.example.demo.DTO.InquireDTO;
+import com.example.demo.repository.InquireRepository;
+
+@Service
+public class InquireService {
+	
+	private final InquireRepository inquireRepository;
+	
+	public InquireService(InquireRepository inquireRepository) {
+		this.inquireRepository = inquireRepository;
+	}
+	
+	@Transactional
+	public Long saveInquire(InquireDTO inquireDTO) {
+		return inquireRepository.save(inquireDTO.toEntity()).getIdx();
+	}
+}

@@ -1,0 +1,11 @@
+package com.example.demo.service;
+
+import org.springframework.stereotype.Service;
+
+import com.example.demo.repository.InquireRepository;
+
+@Service
+public class InquireService {
+	private final InquireRepository inquireRepository;
+	
+}
